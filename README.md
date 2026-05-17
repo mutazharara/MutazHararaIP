@@ -37,6 +37,15 @@ Database:
 Data Management:
 - React useState and localStorage (for saving categories and expenses)
 
+Authentication:
+- JWT Authentication
+- Passlib (password hashing)
+- Role-based access control (Admin/User)
+
+AI Features:
+- Google Gemini API
+- Browser Speech Recognition API
+- Voice-to-expense conversion system
 
 API Communication:
 - Axios Fetch API (Frontend between Backend communication)
@@ -45,6 +54,10 @@ Development Tools:
 - Node.js
 - Python 3
 - VS Code
+
+State Management:
+- React useState
+- localStorage
 
 ---
 
@@ -60,6 +73,10 @@ Key features of the application include:
 - Dark mode support
 - Sidebar navigation between pages
 - Dynamic page titles and breadcrumbs
+- Activity Logs
+- Voice expense input using AI - Gemini 
+- User authentication 
+- Multi user support
 
 ---
 
@@ -76,12 +93,16 @@ The project is divided into **frontend** and **backend** sections.
 backend/
 - **app/routes/**
   - `expenses.py` — Contains API endpoints for managing expenses.
+  - `users.py` — Contains user management endpoints, including profile updates, admin user editing, account activation/deactivation, password reset, and activity logs.
+  - `voice.py` — Contains the voice expense parsing endpoint that uses the Gemini API to convert spoken text into structured expense data.
+  - `auth.py` — Contains authentication routes such as user registration and login.
 - **db.py** — Handles database connection setup.
 - **main.py** — Entry point for the FastAPI application.
 - **models.py** — Defines database models using SQLAlchemy.
 - **schemas.py** — Defines request and response validation using Pydantic.
 - **.env** — Stores environment variables like database credentials.
 - **database/** — Contains database-related configuration files.
+- **auth.py/** - Handles password hashing, JWT token creation, current user authentication, and admin role protection.
 
 ---
 
@@ -94,11 +115,15 @@ frontend/
 - **src/components/**
   Contains reusable UI components such as:
   - AddExpenseModal.jsx
+  - AddUserModal.jsx
+  - EditUserModal.jsx
   - ExpenseTable.jsx
   - Sidebar.jsx
   - Topbar.jsx
   - Toast.jsx
-  - Charts and pagination components
+  - Pagination.jsx
+  - VoiceExpenseButton.jsx
+  - AccountInactiveModal.jsx
 
 - **src/pages/**
   Contains main application pages:
@@ -106,6 +131,8 @@ frontend/
   - ExpensesPage.jsx — Manages expense records.
   - ReportsPage.jsx — Shows insights and analytics.
   - SettingsPage.jsx — Manages categories.
+  - AdminUsersPage.jsx - Manages Users.
+  - UserActivityPage.jsx - Shows Activity Log.
 
 - **src/services/**
   - api.js — Handles communication with the backend API.
@@ -132,7 +159,7 @@ frontend/
 
 ## Challenges Overcome
 
-One of the main challenges was connecting the React frontend with the FastAPI backend while ensuring smooth data flow between the user interface and the MySQL database. Another challenge involved designing a category management system that prevents deleting categories that are already used in expenses. Updating all related expenses automatically when a category name changes required careful state and database synchronization. Implementing reports and insights required grouping and calculating data dynamically from stored expenses. Debugging database connection issues and environment variables was also an important part of development.
+One of the main challenges was connecting the React frontend with the FastAPI backend while ensuring smooth data flow between the user interface and the MySQL database. Another challenge involved designing a category management system that prevents deleting categories that are already used in expenses. Updating all related expenses automatically when a category name changes required careful state and database synchronization. Implementing reports and insights required grouping and calculating data dynamically from stored expenses. Debugging database connection issues and environment variables was also an important part of development. Also several technical challenges were encountered during Integrating voice recognition with Gemini AI and Connecting React frontend with FastAPI backend.
 
 ---
 
@@ -141,9 +168,13 @@ One of the main challenges was connecting the React frontend with the FastAPI ba
 Possible enhancements include:
 
 - Monthly budget limits
-- User authentication 
-- Multi-user support
 - Expense reminders
+- Push notifications and reminders
+- Financial goals and savings tracking
+- Mobile app version
+- OCR receipt scanning
+- AI spending recommendations
+- Recurring expense detection
 
 ---
 
