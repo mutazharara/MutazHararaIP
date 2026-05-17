@@ -5,6 +5,11 @@ import {
   MoonIcon,
   SunIcon,
   WalletIcon,
+  UserCircleIcon,
+  UsersIcon,
+  ClockIcon,
+  ChevronRightIcon,
+  ArrowRightOnRectangleIcon,
 } from "@heroicons/react/24/outline";
 
 function Sidebar({
@@ -12,6 +17,8 @@ function Sidebar({
   toggleDarkMode,
   activeSection,
   setActiveSection,
+  user,
+  onLogout,
 }) {
   const menuItems = [
     { key: "dashboard", label: "Dashboard", icon: HomeIcon },
@@ -19,6 +26,14 @@ function Sidebar({
     { key: "reports", label: "Reports", icon: ChartPieIcon },
     { key: "settings", label: "Settings", icon: Cog6ToothIcon },
   ];
+
+  const adminItems = [
+    { key: "admin-users", label: "Users", icon: UsersIcon },
+    { key: "activity", label: "Activity", icon: ClockIcon },
+  ];
+
+  const finalMenuItems =
+    user?.role === "admin" ? [...menuItems, ...adminItems] : menuItems;
 
   const itemClass =
     "flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition";
@@ -28,7 +43,7 @@ function Sidebar({
     "bg-brand-50 text-brand-700 dark:bg-white/10 dark:text-white";
 
   return (
-    <aside className="w-72 border-r border-gray-200 bg-white px-5 py-6 dark:border-white/10 dark:bg-gray-900">
+    <aside className="sticky top-0 flex h-screen w-72 shrink-0 flex-col overflow-y-auto border-r border-gray-200 bg-white px-5 py-6 dark:border-white/10 dark:bg-gray-900">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-gray-400">
@@ -51,8 +66,8 @@ function Sidebar({
         </button>
       </div>
 
-      <nav className="mt-10 space-y-2">
-        {menuItems.map((item) => {
+      <nav className="mt-8 flex-1 space-y-2">
+        {finalMenuItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeSection === item.key;
 
@@ -60,9 +75,7 @@ function Sidebar({
             <button
               key={item.key}
               onClick={() => setActiveSection(item.key)}
-              className={`${itemClass} ${
-                isActive ? activeClass : inactiveClass
-              }`}
+              className={`${itemClass} ${isActive ? activeClass : inactiveClass}`}
             >
               <Icon className="h-5 w-5" />
               {item.label}
@@ -70,15 +83,38 @@ function Sidebar({
           );
         })}
       </nav>
+      {user && (
+        <button
+          onClick={() => setActiveSection("profile")}
+          className="my-2 w-full rounded-2xl p-2 text-left transition hover:border-brand-200 hover:bg-brand-50 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
+        >
 
-      <div className="mt-10 rounded-2xl border border-brand-100 bg-brand-50 p-4 dark:border-white/10 dark:bg-white/5">
-        <p className="text-sm font-semibold text-brand-700 dark:text-white">
-          Assignment 1
-        </p>
-        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-          Mutaz S M Harara - 26249918
-        </p>
-      </div>
+          <div className="flex items-center gap-2">
+            <div className="flex h-11 w-11 items-center justify-center rounded-full bg-brand-100 text-sm font-bold text-brand-700 dark:bg-white/10 dark:text-white">
+              {user.name?.charAt(0)?.toUpperCase() || "U"}
+            </div>
+
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold text-gray-900 dark:text-white">
+                {user.name}
+              </p>
+              <p className="mt-1 truncate text-xs text-gray-500 dark:text-gray-400">
+                {user.email}
+              </p>
+            </div>
+
+            <ChevronRightIcon className="h-4 w-4 text-gray-400" />
+          </div>
+        </button>
+      )}
+
+      <button
+        onClick={onLogout}
+        className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-red-600 transition hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-500/10"
+      >
+        <ArrowRightOnRectangleIcon className="h-5 w-5" />
+        Logout
+      </button>
     </aside>
   );
 }

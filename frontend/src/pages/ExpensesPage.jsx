@@ -10,22 +10,28 @@ function ExpensesPage({
   setSelectedCategory,
   exportToCSV,
   currentPage,
-  totalPages,
   setCurrentPage,
+  categories = [],
 }) {
+  // Expenses page pagination only
+  const expensesPerPage = 9;
+
+  const startIndex = (currentPage - 1) * expensesPerPage;
+
+  const paginatedExpenses = expenses.slice(
+    startIndex,
+    startIndex + expensesPerPage
+  );
+
+  const totalPages = Math.ceil(
+    expenses.length / expensesPerPage
+  );
+
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-gray-900">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          Expenses
-        </h1>
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          View, search, filter, edit, and manage all expense records.
-        </p>
-      </div>
 
       <ExpenseTable
-        expenses={expenses}
+        expenses={paginatedExpenses}
         onDelete={onDelete}
         onEdit={onEdit}
         searchTerm={searchTerm}
@@ -36,6 +42,7 @@ function ExpensesPage({
         currentPage={currentPage}
         totalPages={totalPages}
         setCurrentPage={setCurrentPage}
+        categories={categories}
       />
     </div>
   );

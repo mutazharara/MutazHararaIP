@@ -5,7 +5,10 @@ import {
   TrashIcon,
   ArrowLeftIcon,
   ArrowRightIcon,
+  ChevronDownIcon,
 } from "@heroicons/react/24/outline";
+
+import Pagination from "./Pagination";
 
 function ExpenseTable({
   expenses = [],
@@ -102,18 +105,21 @@ function ExpenseTable({
             </div>
 
             {/* Category Filter */}
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm text-gray-700 outline-none dark:border-white/10 dark:bg-gray-900 dark:text-white"
-            >
-              <option value="">All Categories</option>
-              {categories.map((category) => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
-              ))}
-            </select>
+            <div className="relative">
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="w-full appearance-none rounded-xl border border-gray-200 bg-white px-4 py-2 pr-10 text-sm text-gray-700 outline-none dark:border-white/10 dark:bg-gray-900 dark:text-white"
+              >
+                <option value="">All Categories</option>
+                {categories.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+              <ChevronDownIcon className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            </div>
 
             {/* Export */}
             <button
@@ -211,51 +217,11 @@ function ExpenseTable({
         </table>
       </div>
 
-      {/* Footer */}
-      <div className="flex flex-col gap-4 border-t border-gray-200 px-6 py-4 sm:flex-row sm:items-center sm:justify-between dark:border-white/10">
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          Showing page{" "}
-          <span className="font-medium text-gray-900 dark:text-white">
-            {currentPage}
-          </span>{" "}
-          of{" "}
-          <span className="font-medium text-gray-900 dark:text-white">
-            {totalPages}
-          </span>
-        </p>
-
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-            disabled={currentPage === 1}
-            className={`inline-flex items-center h-10 justify-center rounded-lg border px-4 py-2 text-sm font-medium transition ${
-              currentPage === 1
-                ? "cursor-not-allowed border-gray-200 bg-gray-100 text-gray-400 dark:border-white/10 dark:bg-white/5 dark:text-gray-500"
-                : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50 dark:border-white/10 dark:bg-gray-900 dark:text-white dark:hover:bg-white/5"
-            }`}
-          >
-            <ArrowLeftIcon className="h-4 w-4" />
-          </button>
-
-          <span className="inline-flex h-10 min-w-[40px] items-center justify-center rounded-lg border border-brand-200 bg-brand-50 px-3 text-sm font-semibold text-brand-600 dark:border-white/10 dark:bg-white/10 dark:text-white">
-            {currentPage}
-          </span>
-
-          <button
-            onClick={() =>
-              setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-            }
-            disabled={currentPage === totalPages}
-            className={`inline-flex items-center h-10 justify-center rounded-lg border px-4 py-2 text-sm font-medium transition ${
-              currentPage === totalPages
-                ? "cursor-not-allowed border-gray-200 bg-gray-100 text-gray-400 dark:border-white/10 dark:bg-white/5 dark:text-gray-500"
-                : "border-gray-200 bg-white text-gray-700 hover:bg-gray-50 dark:border-white/10 dark:bg-gray-900 dark:text-white dark:hover:bg-white/5"
-            }`}
-          >
-            <ArrowRightIcon className="h-4 w-4" />
-          </button>
-        </div>
-      </div>
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        setCurrentPage={setCurrentPage}
+      />
     </div>
   );
 }

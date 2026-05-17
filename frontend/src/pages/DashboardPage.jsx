@@ -12,9 +12,29 @@ import DeleteConfirmModal from "../components/DeleteConfirmModal";
 import ExpensesPage from "../pages/ExpensesPage";
 import SettingsPage from "../pages/SettingsPage";
 import ReportsPage from "../pages/ReportsPage";
+import LoginPage from "./LoginPage";
+import RegisterPage from "./RegisterPage";
+import UserProfilePage from "./UserProfilePage";
+import AdminUsersPage from "./AdminUsersPage";
+import UserActivityPage from "./UserActivityPage";
+import AddUserModal from "../components/AddUserModal";
+import VoiceExpenseButton from "../components/VoiceExpenseButton";
 
 
 function DashboardPage() {
+  const [user, setUser] = useState(() => {
+  const savedUser = localStorage.getItem("user");
+  return savedUser ? JSON.parse(savedUser) : null;
+  });
+  const [authPage, setAuthPage] = useState("login");
+  const handleLogout = () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+  setUser(null);
+  setActiveSection("dashboard");
+  setToast({ type: "success", message: "Logged out successfully" });
+  };
+
   const [editingExpense, setEditingExpense] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [toast, setToast] = useState(null);
@@ -25,6 +45,12 @@ function DashboardPage() {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [sortOption, setSortOption] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+
+  const [isAddUserOpen, setIsAddUserOpen] = useState(false);
+
+  const [usersRefreshKey, setUsersRefreshKey] = useState(0);
+
+  const [voiceExpenseData, setVoiceExpenseData] = useState(null);
 
   const expensesPerPage = 5;
   const budgetLimit = 5000;
@@ -81,23 +107,28 @@ const getPageMeta = () => {
         breadcrumbs: ["Home", "Settings"],
       };
 
+    case "profile":
+      return {
+        title: "Profile",
+        breadcrumbs: ["Home", "Profile"],
+      };
+
+    case "activity":
+      return {
+        title: "Activity",
+        breadcrumbs: ["Home", "Activity"],
+      };
+
     default:
       return {
-        title: "Dashboard",
-        breadcrumbs: ["Home", "Dashboard"],
+        title: "Users",
+        breadcrumbs: ["Home", "Users"],
       };
   }
 };
 
-const { title, breadcrumbs } = getPageMeta();
+  const { title, breadcrumbs } = getPageMeta();
 
-
-useEffect(() => {
-  localStorage.setItem("categories", JSON.stringify(categories));
-}, [categories]);
-
-
-useEffect(() => {
   const fetchExpenses = async () => {
     try {
       const res = await api.get("/expenses/");
@@ -107,8 +138,16 @@ useEffect(() => {
     }
   };
 
-  fetchExpenses();
-}, []);
+  useEffect(() => {
+    localStorage.setItem("categories", JSON.stringify(categories));
+  }, [categories]);
+
+
+  useEffect(() => {
+    if (user) {
+      fetchExpenses();
+    }
+  }, [user]);
 
 
 useEffect(() => {
@@ -165,18 +204,31 @@ useEffect(() => {
 
   const addExpense = async (newExpense) => {
     try {
-        const res = await api.post("/expenses/", {
-        ...newExpense,
+      await api.post("/expenses/", {
+        title: newExpense.title,
+        category: newExpense.category,
         amount: Number(newExpense.amount),
-        });
+        date: newExpense.date,
+        description: newExpense.description,
+      });
 
-        setExpenses((prev) => [...prev, res.data]);
-        setToast({ type: "success", message: "Expense added successfully" });
+      await fetchExpenses();
+
+      setCurrentPage(1);
+
+      setToast({
+        type: "success",
+        message: "Expense added successfully",
+      });
     } catch (error) {
-        console.error(error);
-        setToast({ type: "error", message: "Failed to add expense" });
+      console.error(error);
+
+      setToast({
+        type: "error",
+        message: "Failed to add expense",
+      });
     }
-    };
+  };
 
     const deleteExpense = async (id) => {
     try {
@@ -190,26 +242,29 @@ useEffect(() => {
     };
 
     const updateExpense = async (updatedExpense) => {
-    try {
-        const res = await api.put(`/expenses/${updatedExpense.id}`, {
-        title: updatedExpense.title,
-        category: updatedExpense.category,
-        amount: Number(updatedExpense.amount),
-        date: updatedExpense.date,
-        description: updatedExpense.description,
+      try {
+        await api.put(`/expenses/${updatedExpense.id}`, {
+          title: updatedExpense.title,
+          category: updatedExpense.category,
+          amount: Number(updatedExpense.amount),
+          date: updatedExpense.date,
+          description: updatedExpense.description,
         });
 
-        setExpenses((prev) =>
-        prev.map((expense) =>
-            expense.id === updatedExpense.id ? res.data : expense
-        )
-        );
+        await fetchExpenses();
 
-        setToast({ type: "success", message: "Expense updated successfully" });
-    } catch (error) {
+        setToast({
+          type: "success",
+          message: "Expense updated successfully",
+        });
+      } catch (error) {
         console.error(error);
-        setToast({ type: "error", message: "Failed to update expense" });
-    }
+
+        setToast({
+          type: "error",
+          message: "Failed to update expense",
+        });
+      }
     };
 
   const editExpense = (expense) => {
@@ -348,6 +403,27 @@ const topCategory = topCategoryEntry
   .sort((a, b) => new Date(b.date) - new Date(a.date))
   .slice(0, 5);
 
+  if (!user) {
+  return (
+    <>
+      {authPage === "login" ? (
+        <LoginPage
+          setUser={setUser}
+          setToast={setToast}
+          goToRegister={() => setAuthPage("register")}
+        />
+      ) : (
+        <RegisterPage
+          setToast={setToast}
+          goToLogin={() => setAuthPage("login")}
+        />
+      )}
+
+      <Toast toast={toast} onClose={() => setToast(null)} />
+    </>
+  );
+}
+
 
  
   return (
@@ -357,15 +433,34 @@ const topCategory = topCategoryEntry
         toggleDarkMode={() => setDarkMode((prev) => !prev)}
         activeSection={activeSection}
         setActiveSection={setActiveSection}
-        />
+        user={user}
+        onLogout={handleLogout}
+      />
 
       <div className="flex-1 flex flex-col">
         <div className="p-6">
+          <VoiceExpenseButton
+   setExpenseData={setVoiceExpenseData}
+   setIsModalOpen={setIsModalOpen}
+   setToast={setToast}
+/>
+
           <Topbar
             title={title}
             breadcrumbs={breadcrumbs}
-            onAddExpense={() => setIsModalOpen(true)}
-            />
+            buttonLabel={
+              activeSection === "admin-users"
+                ? "Add User"
+                : "Add Expense"
+            }
+            onAddExpense={() => {
+              if (activeSection === "admin-users") {
+                setIsAddUserOpen(true);
+              } else {
+                setIsModalOpen(true);
+              }
+            }}
+          />
 
                     {activeSection === "dashboard" && (
             <>
@@ -395,9 +490,26 @@ const topCategory = topCategoryEntry
             </>
             )}
 
+
+            {activeSection === "profile" && (
+              <UserProfilePage
+                user={user}
+                setUser={setUser}
+                setToast={setToast}
+              />
+            )}
+
+            {activeSection === "activity" && (
+              <UserActivityPage />
+            )}
+
+            {activeSection === "admin-users" && user?.role === "admin" && (
+              <AdminUsersPage setToast={setToast} refreshKey={usersRefreshKey} />
+            )}
+
                 {activeSection === "expenses" && (
-                <ExpenseTable
-                    expenses={paginatedExpenses}
+                 <ExpensesPage
+                    expenses={filteredExpenses}
                     onDelete={(id) => setDeleteTarget(id)}
                     onEdit={editExpense}
                     searchTerm={searchTerm}
@@ -406,9 +518,9 @@ const topCategory = topCategoryEntry
                     setSelectedCategory={setSelectedCategory}
                     exportToCSV={exportToCSV}
                     currentPage={currentPage}
-                    totalPages={totalPages}
                     setCurrentPage={setCurrentPage}
-                />
+                    categories={categories}
+                  />
                 )}
 
                 {activeSection === "reports" && (
@@ -437,15 +549,24 @@ const topCategory = topCategoryEntry
         </div>
 
         <AddExpenseModal
-        isOpen={isModalOpen}
-        onClose={() => {
+          isOpen={isModalOpen}
+          onClose={() => {
             setIsModalOpen(false);
             setEditingExpense(null);
-        }}
-        onAdd={addExpense}
-        onUpdate={updateExpense}
-        editingExpense={editingExpense}
-        categories={categories}
+            setVoiceExpenseData(null);
+          }}
+          onAdd={addExpense}
+          onUpdate={updateExpense}
+          editingExpense={editingExpense}
+          voiceExpenseData={voiceExpenseData}
+          categories={categories}
+        />
+
+        <AddUserModal
+          isOpen={isAddUserOpen}
+          onClose={() => setIsAddUserOpen(false)}
+          setToast={setToast}
+          onUserAdded={() => setUsersRefreshKey((prev) => prev + 1)}
         />
 
         <Toast toast={toast} onClose={() => setToast(null)} />

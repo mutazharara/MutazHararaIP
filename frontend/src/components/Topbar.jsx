@@ -1,9 +1,10 @@
 import { ChevronRightIcon } from "@heroicons/react/24/outline";
 
 function Topbar({
-  title,
-  breadcrumbs,
-  onAddExpense,
+ title,
+ breadcrumbs,
+ onAddExpense,
+ buttonLabel = "Add Expense"
 }) {
   return (
     <div className="mb-6 flex flex-col gap-4">
@@ -33,10 +34,12 @@ function Topbar({
         {onAddExpense && (
           <button
             onClick={onAddExpense}
-            className="rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
+            className="rounded-xl bg-brand-600 px-5 py-3 text-sm font-semibold text-white hover:bg-brand-700"
           >
-            + Add Expense
+            + {buttonLabel}
           </button>
+
+
         )}
       </div>
     </div>
